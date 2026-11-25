@@ -1,0 +1,37 @@
+name: test
+on: [push, workflow_dispatch]
+jobs:
+  run:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: syntax
+        run: bash -n vps-first-steps.sh
+      - name: help
+        run: bash vps-first-steps.sh --help
+      - name: bad input is refused
+        run: |
+          ! sudo bash vps-first-steps.sh --user 'Bad Name' --yes
+          ! sudo bash vps-first-steps.sh --allow 'abc' --yes
+      - name: prepare ssh server with a root key
+        run: |
+          sudo apt-get update -q && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q openssh-server
+          sudo mkdir -p /root/.ssh && ssh-keygen -q -t ed25519 -N '' -f /tmp/k && sudo cp /tmp/k.pub /root/.ssh/authorized_keys
+      - name: full run
+        run: sudo bash vps-first-steps.sh --user deploy --allow 80,443,51820/udp --no-updates --yes
+      - name: checks
+        run: |
+          sudo ufw status verbose | tee /tmp/ufw.txt
+          grep -q '22/tcp.*LIMIT' /tmp/ufw.txt
+          grep -q '80' /tmp/ufw.txt && grep -q '51820/udp' /tmp/ufw.txt
+          systemctl is-active fail2ban
+          id deploy && id -nG deploy | grep -qw sudo
+          sudo test -s /home/deploy/.ssh/authorized_keys
+          sudo sshd -T | grep -i '^passwordauthentication no'
+          sudo sshd -T | grep -i '^permitrootlogin without-password\|^permitrootlogin prohibit-password'
+      - name: second run is safe
+        run: sudo bash vps-first-steps.sh --user deploy --allow 80,443 --no-updates --yes
