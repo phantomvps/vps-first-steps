@@ -15,8 +15,8 @@ jobs:
         run: bash vps-first-steps.sh --help
       - name: bad input is refused
         run: |
-          ! sudo bash vps-first-steps.sh --user 'Bad Name' --yes
-          ! sudo bash vps-first-steps.sh --allow 'abc' --yes
+          if sudo bash vps-first-steps.sh --user 'Bad Name' --yes; then exit 1; fi
+          if sudo bash vps-first-steps.sh --allow 'abc' --yes; then exit 1; fi
       - name: prepare ssh server with a root key
         run: |
           sudo apt-get update -q && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q openssh-server
