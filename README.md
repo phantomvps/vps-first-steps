@@ -39,7 +39,7 @@ reloading, and reverts its own change if the test fails. Every push is tested on
 
 ## Need a server?
 
-This script is maintained by the team behind [PhantomVPS](https://phantomvps.com): VPS and dedicated servers with
+This script is maintained by the team behind [PhantomVPS](https://phantomvps.com?ref=github): VPS and dedicated servers with
 root access, no ID documents needed, paid with Monero, Bitcoin, Litecoin, USDT, USDC, SOL or TRX.
 
 ## License
